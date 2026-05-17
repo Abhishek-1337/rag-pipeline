@@ -37,6 +37,17 @@ class RAGPipeline:
     def tf_idf(self, text, vocab, idf):
         tf = self.compute_tf(text, vocab)
         return [i*j for i, j in zip(tf, idf)]
+    
+    def cosine_similarity(a, b):
+        dot_product = sum(x*y for x, y in zip(a, b))
+        mag_a = math.sqrt(sum(x*x for x in a))
+        mag_b = math.sqrt(sum(y*y for y in b))
+        if mag_a == 0.0 or mag_b == 0.0:
+            return 0.0
+
+        return dot_product / ( mag_a * mag_b)
+    
+    
 
 
         
