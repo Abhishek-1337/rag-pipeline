@@ -38,7 +38,7 @@ class RAGPipeline:
         tf = self.compute_tf(text, vocab)
         return [i*j for i, j in zip(tf, idf)]
     
-    def cosine_similarity(a, b):
+    def cosine_similarity(self, a, b):
         dot_product = sum(x*y for x, y in zip(a, b))
         mag_a = math.sqrt(sum(x*x for x in a))
         mag_b = math.sqrt(sum(y*y for y in b))
@@ -47,7 +47,15 @@ class RAGPipeline:
 
         return dot_product / ( mag_a * mag_b)
     
-    
+    def search(self, query_embed, stored, top_k): 
+        scores = []
+        for i, embed in stored:
+            sim = self.cosine_similarity(query_embed, embed)
+            scores.append((i, sim))
+        
+        scores.sort(key = lambda x:x[1], reverse=True)
+        return scores[:top_k]
+
 
 
         
