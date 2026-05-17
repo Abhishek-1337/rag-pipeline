@@ -17,7 +17,6 @@ class RAGPipeline:
         vocab = set()
         for chunk in all_chunks: 
             vocab.update(chunk.lower().split())
-
         return vocab
 
     def compute_tf(self, text, vocab):
@@ -44,12 +43,11 @@ class RAGPipeline:
         mag_b = math.sqrt(sum(y*y for y in b))
         if mag_a == 0.0 or mag_b == 0.0:
             return 0.0
-
         return dot_product / ( mag_a * mag_b)
     
     def search(self, query_embed, stored, top_k): 
         scores = []
-        for i, embed in stored:
+        for i, embed in enumerate(stored):
             sim = self.cosine_similarity(query_embed, embed)
             scores.append((i, sim))
         
@@ -58,14 +56,21 @@ class RAGPipeline:
 
 
 
-        
-
-
-
-      
+document = 'TF (Term Frequency) measures how often a word appears inside one chunk, while IDF (Inverse Document Frequency) measures how rare that word is across all chunks. For example, if your chunks are "python python class", "python object", and "dog cat", then in the first chunk the TF of "python" is 2/3 because it appears 2 times out of 3 words. To compute IDF for "python", we look at all chunks and see that it appears in 2 out of 3 chunks, so its IDF is lower because it is relatively common. The word "class" appears in only 1 out of 3 chunks, so it gets a higher IDF because it is rarer and more informative. In short, TF tells you how important a word is in a specific chunk, and IDF tells you how unique that word is across the entire collection of chunks.'
 
 rag = RAGPipeline()
-chunks = rag.chunking("A document is a document, you can't say a sentence is a document", 2, 1)
+all_chunks = rag.chunking(document, 10, 3)
+vocab = rag.create_vocab(all_chunks)
 
-vocab = rag.create_vocab(chunks)
-print(vocab)
+idf = rag.compute_idf(all_chunks, vocab)
+embeddings = [
+    rag.tf_idf(chunk, vocab, idf) for chunk in all_chunks
+]
+
+user_query = "What is Term frequency"
+query_embeddings = rag.tf_idf(user_query, vocab, idf)
+scores = rag.search(query_embeddings, embeddings, 2)
+
+retrieved = [(all_chunks[i], score) for i, score in scores]
+
+print(retrieved)
